@@ -1,0 +1,114 @@
+import { useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Set default Leaflet icon using CDN
+L.Marker.prototype.options.icon = L.icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
+
+const businesses = [
+  {
+    name: "Blue Agave Club",
+    category: "Restaurants",
+    description: "Upscale Mexican cuisine in a historic building with a lovely patio.",
+    location: [37.661871, -121.874397],
+  },
+  {
+    name: "Inklings Coffee & Tea",
+    category: "Cafés",
+    description: "Charming coffee shop with rustic decor and a relaxed vibe.",
+    location: [37.661491, -121.874916],
+  },
+  {
+    name: "Prim Boutique",
+    category: "Shopping",
+    description: "Trendy women's clothing boutique with curated fashion collections.",
+    location: [37.661763, -121.875523],
+  },
+  {
+    name: "Museum on Main",
+    category: "Attractions",
+    description: "Local history museum with educational exhibits and family programs.",
+    location: [37.662096, -121.875302],
+  },
+  {
+    name: "Meadowlark Dairy",
+    category: "Dessert",
+    description: "Classic drive-thru dairy known for giant soft-serve cones.",
+    location: [37.663014, -121.875919],
+  },
+  {
+    name: "Beer Baron Bar & Kitchen",
+    category: "Restaurants",
+    description: "Craft cocktails, beer flights, and comfort food in a cool setting.",
+    location: [37.662188, -121.874796],
+  },
+];
+
+const categories = [...new Set(businesses.map((b) => b.category))];
+
+export default function App() {
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const filteredBusinesses =
+    selectedCategory === "All"
+      ? businesses
+      : businesses.filter((b) => b.category === selectedCategory);
+
+  return (
+    <div className="flex flex-col md:flex-row h-screen font-sans">
+      <div className="w-full md:w-1/2 overflow-y-scroll p-6 bg-white shadow-md z-10">
+        <h1 className="text-3xl font-bold mb-4 text-gray-800">Pleasanton Downtown Directory</h1>
+
+        <select
+          className="mb-4 px-4 py-2 border rounded"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="All">All Categories</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+
+        <ul className="space-y-4">
+          {filteredBusinesses.map((biz, idx) => (
+            <li key={idx} className="border p-4 rounded shadow-sm">
+              <h2 className="text-xl font-semibold text-blue-700">{biz.name}</h2>
+              <p className="text-sm text-gray-500 mb-1">{biz.category}</p>
+              <p>{biz.description}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="w-full md:w-1/2 h-[400px] md:h-full">
+        <MapContainer
+          center={[37.6619, -121.8752]}
+          zoom={16}
+          scrollWheelZoom={false}
+          className="h-full w-full"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {filteredBusinesses.map((biz, idx) => (
+            <Marker key={idx} position={biz.location}>
+              <Popup>
+                <strong>{biz.name}</strong>
+                <br />
+                {biz.description}
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+    </div>
+  );
+}
